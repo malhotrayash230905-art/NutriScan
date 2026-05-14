@@ -1,0 +1,48 @@
+﻿Resolving dependencies...
+flutter : The current 
+Dart SDK version is 
+3.5.3.
+At line:1 char:1
++ flutter pub get > 
+pub_get_error.log 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (The current D   
+ art SDK version is    
+ 3.5.3.:String) []    
+, RemoteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+
+Because 
+shared_preferences 
+2.5.5 requires SDK 
+version ^3.9.0 and no 
+versions of 
+shared_preferences 
+match >2.5.5 <3.0.0, 
+shared_preferences 
+^2.5.5 is forbidden.
+So, because nutri_ai 
+depends on 
+shared_preferences 
+^2.5.5, version 
+solving failed.
+
+
+You can try one of the 
+following suggestions 
+to make the pubspec 
+resolve:
+* Try using the 
+Flutter SDK version: 
+3.41.6. 
+* Consider downgrading 
+your constraint on 
+shared_preferences: 
+flutter pub add shared_
+preferences:^2.5.3

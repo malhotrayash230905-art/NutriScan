@@ -1,0 +1,37 @@
+name: nutri_ai
+description: A premium AI Nutrition app.
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  google_generative_ai: ^0.4.7
+  image_picker: ^1.1.2
+  shared_preferences: 2.5.3
+  url_launcher: 6.2.6
+  http: ^1.2.0
+  http_parser: ^4.1.2
+  supabase_flutter: ^2.12.4
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/app_icon.png"
+  adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: "assets/app_icon.png"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/app_icon.png

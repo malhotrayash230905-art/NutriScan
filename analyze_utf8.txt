@@ -1,0 +1,64 @@
+﻿Analyzing Project...
+
+  error - lib\main.dart:977:174 - The argument type 'int' can't be assigned to the parameter type 'String'.  - argument_type_not_assignable
+  error - lib\main.dart:977:179 - Too many positional arguments: 5 expected, but 8 found. Try removing the extra arguments. - extra_positional_arguments
+  error - lib\main.dart:979:175 - The argument type 'int' can't be assigned to the parameter type 'String'.  - argument_type_not_assignable
+  error - lib\main.dart:979:180 - Too many positional arguments: 5 expected, but 8 found. Try removing the extra arguments. - extra_positional_arguments
+  error - lib\main.dart:981:150 - The argument type 'int' can't be assigned to the parameter type 'String'.  - argument_type_not_assignable
+  error - lib\main.dart:981:155 - Too many positional arguments: 5 expected, but 8 found. Try removing the extra arguments. - extra_positional_arguments
+  error - lib\main.dart:983:166 - The argument type 'int' can't be assigned to the parameter type 'String'.  - argument_type_not_assignable
+  error - lib\main.dart:983:171 - Too many positional arguments: 5 expected, but 8 found. Try removing the extra arguments. - extra_positional_arguments
+  error - lib\main.dart:985:190 - The argument type 'int' can't be assigned to the parameter type 'String'.  - argument_type_not_assignable
+  error - lib\main.dart:985:195 - Too many positional arguments: 5 expected, but 8 found. Try removing the extra arguments. - extra_positional_arguments
+  error - lib\main.dart:987:147 - The argument type 'int' can't be assigned to the parameter type 'String'.  - argument_type_not_assignable
+  error - lib\main.dart:987:152 - Too many positional arguments: 5 expected, but 8 found. Try removing the extra arguments. - extra_positional_arguments
+  error - lib\main.dart:989:150 - The argument type 'int' can't be assigned to the parameter type 'String'.  - argument_type_not_assignable
+  error - lib\main.dart:989:155 - Too many positional arguments: 5 expected, but 8 found. Try removing the extra arguments. - extra_positional_arguments
+  error - lib\main.dart:991:159 - The argument type 'int' can't be assigned to the parameter type 'String'.  - argument_type_not_assignable
+  error - lib\main.dart:991:164 - Too many positional arguments: 5 expected, but 8 found. Try removing the extra arguments. - extra_positional_arguments
+  error - test\widget_test.dart:11:8 - Target of URI doesn't exist: 'package:nutriai/main.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist. - uri_does_not_exist
+  error - test\widget_test.dart:16:35 - The name 'MyApp' isn't a class. Try correcting the name to match an existing class. - creation_with_non_type
+warning - lib\main.dart:4:8 - Unused import: 'dart:io'. Try removing the import directive. - unused_import
+warning - lib\main.dart:736:10 - The value of the field '_selectedFile' isn't used. Try removing the field, or using it. - unused_field
+   info - lib\main.dart:373:17 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib\main.dart:431:53 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:431:85 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:433:61 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:433:94 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:436:47 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:498:99 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:498:131 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:510:99 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:510:131 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:542:70 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:543:44 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:571:5 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib\main.dart:572:5 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib\main.dart:602:172 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:602:243 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:603:173 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:603:244 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:653:44 - Use interpolation to compose strings and values. Try using string interpolation to build the composite string. - prefer_interpolation_to_compose_strings
+   info - lib\main.dart:916:102 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:916:135 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:916:180 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:918:167 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:936:93 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:936:125 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:1011:138 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:1011:170 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:1018:145 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:1056:169 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:1056:240 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:1122:25 - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:1133:25 - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:1191:19 - Use interpolation to compose strings and values. Try using string interpolation to build the composite string. - prefer_interpolation_to_compose_strings
+   info - lib\main.dart:1218:172 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:1218:243 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:1219:173 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:1219:244 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib\main.dart:1237:85 - Use interpolation to compose strings and values. Try using string interpolation to build the composite string. - prefer_interpolation_to_compose_strings
+   info - lib\main.dart:1239:72 - Use interpolation to compose strings and values. Try using string interpolation to build the composite string. - prefer_interpolation_to_compose_strings
+   info - test\widget_test.dart:11:8 - The imported package 'nutriai' isn't a dependency of the importing package. Try adding a dependency for 'nutriai' in the 'pubspec.yaml' file. - depend_on_referenced_packages
+
+60 issues found.

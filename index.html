@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriAI | Intelligent Health</title>
+    <!-- PWA Setup -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0a0e17">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3063/3063229.png">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Background Glow Effects -->
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+
+    <!-- Login Screen -->
+    <div class="login-container" id="login-screen">
+        <div class="glass-panel login-box">
+            <div class="logo justify-center">
+                <i class='bx bx-dna'></i>
+                <span>NutriAI</span>
+            </div>
+            <h2>Welcome Back</h2>
+            <p>Enter your details to access your health dashboard.</p>
+            <form id="login-form">
+                <div class="input-group">
+                    <i class='bx bx-envelope'></i>
+                    <input type="email" id="email" placeholder="Email Address" required value="user@nutriai.com">
+                </div>
+                <div class="input-group">
+                    <i class='bx bx-lock-alt'></i>
+                    <input type="password" id="password" placeholder="Password" required value="password123">
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Sign In</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="app-container hidden" id="main-app">
+        <!-- Sidebar -->
+        <aside class="sidebar glass-panel">
+            <div class="logo">
+                <i class='bx bx-dna'></i>
+                <span>NutriAI</span>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-target="dashboard">
+                    <i class='bx bx-grid-alt'></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-target="scanner">
+                    <i class='bx bx-scan'></i>
+                    <span>Report Scanner</span>
+                </button>
+                <button class="nav-item" data-target="chat">
+                    <i class='bx bx-bot'></i>
+                    <span>AI Assistant</span>
+                </button>
+                <button class="nav-item" data-target="nutrition">
+                    <i class='bx bx-restaurant'></i>
+                    <span>Nutrition Plan</span>
+                </button>
+                <div style="flex: 1;"></div>
+                <button class="nav-item text-orange" id="logout-btn">
+                    <i class='bx bx-log-out'></i>
+                    <span>Logout</span>
+                </button>
+            </nav>
+
+            <div class="user-profile">
+                <img src="https://ui-avatars.com/api/?name=Shaurya&background=0D8ABC&color=fff" alt="User"
+                    id="user-avatar">
+                <div>
+                    <h4 id="user-sidebar-name">Shaurya</h4>
+                    <p>Free Plan</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Headers and dynamic views will be injected here via JS or toggled -->
+            <section id="dashboard" class="view active">
+                <header class="view-header">
+                    <div>
+                        <h1>Welcome back, <span id="dashboard-name">Shaurya</span> 👋</h1>
+                        <p>Here's your latest health overview.</p>
+                    </div>
+                </header>
+
+                <div class="dashboard-grid">
+                    <div class="metric-card glass-panel">
+                        <div class="metric-header">
+                            <i class='bx bx-droplet'></i>
+                            <span>Hydration</span>
+                        </div>
+                        <h2>2.4L <small>/ 3L</small></h2>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 80%"></div>
+                        </div>
+                    </div>
+                    <div class="metric-card glass-panel">
+                        <div class="metric-header">
+                            <i class='bx bx-fire'></i>
+                            <span>Calories</span>
+                        </div>
+                        <h2>1,850 <small>/ 2200 kcal</small></h2>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 84%; background: var(--accent-orange);"></div>
+                        </div>
+                    </div>
+                    <div class="metric-card glass-panel">
+                        <div class="metric-header">
+                            <i class='bx bx-line-chart'></i>
+                            <span>Health Score</span>
+                        </div>
+                        <h2>88<small>/100</small></h2>
+                        <p class="text-green">+2 from last week</p>
+                    </div>
+                    <div class="metric-card glass-panel">
+                        <div class="metric-header">
+                            <i class='bx bx-plus-medical'></i>
+                            <span>Hemoglobin</span>
+                        </div>
+                        <h2>14.2<small> g/dL</small></h2>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 90%; background: #ff4d4d;"></div>
+                        </div>
+                    </div>
+                    <div class="metric-card glass-panel">
+                        <div class="metric-header">
+                            <i class='bx bx-test-tube'></i>
+                            <span>Blood Glucose</span>
+                        </div>
+                        <h2>85<small> mg/dL</small></h2>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 85%; background: var(--secondary, #b366ff);"></div>
+                        </div>
+                    </div>
+                    <div class="metric-card glass-panel">
+                        <div class="metric-header">
+                            <i class='bx bx-sun'></i>
+                            <span>Vitamin D</span>
+                        </div>
+                        <h2>22<small> ng/mL</small></h2>
+                        <p class="text-orange">Suboptimal</p>
+                    </div>
+                    <div class="metric-card glass-panel">
+                        <div class="metric-header">
+                            <i class='bx bx-heart'></i>
+                            <span>Heart Rate</span>
+                        </div>
+                        <h2>72<small> bpm</small></h2>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 80%; background: #ff4d94;"></div>
+                        </div>
+                    </div>
+                    <div class="metric-card glass-panel">
+                        <div class="metric-header">
+                            <i class='bx bx-tachometer'></i>
+                            <span>Blood Pressure</span>
+                        </div>
+                        <h2>120/80<small> mmHg</small></h2>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 85%; background: var(--secondary, #b366ff);"></div>
+                        </div>
+                    </div>
+                    <div class="metric-card glass-panel">
+                        <div class="metric-header">
+                            <i class='bx bx-pie-chart-alt-2'></i>
+                            <span>Cholesterol</span>
+                        </div>
+                        <h2>185<small> mg/dL</small></h2>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 90%; background: #ffc107;"></div>
+                        </div>
+                    </div>
+                    <div class="metric-card glass-panel">
+                        <div class="metric-header">
+                            <i class='bx bx-moon'></i>
+                            <span>Sleep</span>
+                        </div>
+                        <h2>7.5<small> hrs</small></h2>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 95%; background: #3f51b5;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-banners">
+                    <div class="banner glass-panel premium-gradient">
+                        <div class="banner-content">
+                            <h3>Upload your latest blood report</h3>
+                            <p>Our AI can analyze your new report to adjust your nutrition plan immediately.</p>
+                            <button class="btn btn-primary" onclick="app.switchView('scanner')">Scan Report</button>
+                        </div>
+                        <i class='bx bx-file-find banner-icon'></i>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Other views hidden by default -->
+            <section id="scanner" class="view">
+                <header class="view-header">
+                    <div>
+                        <h1>Medical Report Scanner</h1>
+                        <p>Upload your lab results for AI analysis.</p>
+                    </div>
+                </header>
+                <div class="scanner-container glass-panel">
+                    <div class="scanner-actions" id="scanner-actions" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <div class="upload-area" id="opt-camera" style="flex: 1; min-width: 200px;">
+                            <i class='bx bx-camera'></i>
+                            <h3>Take Photo</h3>
+                            <p>Use your camera</p>
+                        </div>
+                        <div class="upload-area" id="opt-files" style="flex: 1; min-width: 200px;">
+                            <i class='bx bx-folder-open'></i>
+                            <h3>Upload File</h3>
+                            <p>From phone files</p>
+                        </div>
+                    </div>
+
+                    <div class="scan-results hidden" id="scan-results">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <section id="chat" class="view">
+                <header class="view-header">
+                    <div>
+                        <h1>AI Health Assistant</h1>
+                        <p>Ask anything about your diet or health reports.</p>
+                    </div>
+                </header>
+                <div class="chat-container glass-panel">
+                    <div class="chat-history" id="chat-history">
+                        <div class="message ai" id="chat-welcome-msg">
+                            <div class="avatar"><i class='bx bx-bot'></i></div>
+                            <div class="bubble">Hello Shaurya! I've reviewed your latest health metrics. How can I help
+                                you today?</div>
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-input" placeholder="Type your message...">
+                        <button class="btn btn-primary btn-icon" id="send-btn"><i class='bx bx-send'></i></button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="nutrition" class="view">
+                <header class="view-header" style="justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h1>Your Nutrition Plan</h1>
+                        <p>AI-tailored based on your latest metrics.</p>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 1rem; background: var(--glass-bg); padding: 0.5rem 1rem; border-radius: 12px; border: 1px solid var(--glass-border);">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <small>Height:</small>
+                                <input type="number" id="input-height" value="180" style="width: 50px; background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 2px 4px; text-align: center;"> cm
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <small>Weight:</small>
+                                <input type="number" id="input-weight" value="75" style="width: 50px; background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 2px 4px; text-align: center;"> kg
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 1rem;">
+                                <small>BMI:</small>
+                                <span id="display-bmi" style="font-weight: bold; color: var(--accent-primary);">23.1</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; background: var(--glass-bg); padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid var(--glass-border);">
+                            <span>Vegetarian Food</span>
+                            <label class="switch">
+                                <input type="checkbox" id="veg-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </header>
+                <div class="nutrition-grid">
+                    <!-- Non-Veg Meals -->
+                    <div class="meal-card glass-panel non-veg-meal">
+                        <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=300&q=80"
+                            alt="Breakfast">
+                        <div class="meal-info">
+                            <span class="meal-tag">Breakfast</span>
+                            <h3>Avocado Toast & Eggs</h3>
+                            <p>Rich in healthy fats and protein to start the day. Recommended due to slightly lower Vitamin D.</p>
+                            <div class="meal-macros" data-base-kcal="350" data-base-pro="20" data-base-qty="250" data-base-unit="g">
+                                <span class="macro-stats">350 kcal • 20g Protein</span><br>
+                                <span class="macro-qty text-green" style="font-weight: bold;">Quantity: 250 g</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="meal-card glass-panel non-veg-meal">
+                        <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=300&q=80"
+                            alt="Lunch">
+                        <div class="meal-info">
+                            <span class="meal-tag">Lunch</span>
+                            <h3>Grilled Salmon Bowl</h3>
+                            <p>High in Omega-3 to help with cardiovascular optimization.</p>
+                            <div class="meal-macros" data-base-kcal="520" data-base-pro="42" data-base-qty="400" data-base-unit="g">
+                                <span class="macro-stats">520 kcal • 42g Protein</span><br>
+                                <span class="macro-qty text-green" style="font-weight: bold;">Quantity: 400 g</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="meal-card glass-panel non-veg-meal">
+                        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80"
+                            alt="Snacks">
+                        <div class="meal-info">
+                            <span class="meal-tag">Snacks</span>
+                            <h3>Greek Yogurt & Almonds</h3>
+                            <p>High in calcium and protein. Great for afternoon energy.</p>
+                            <div class="meal-macros" data-base-kcal="200" data-base-pro="15" data-base-qty="200" data-base-unit="g">
+                                <span class="macro-stats">200 kcal • 15g Protein</span><br>
+                                <span class="macro-qty text-green" style="font-weight: bold;">Quantity: 200 g</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="meal-card glass-panel non-veg-meal">
+                        <img src="https://images.unsplash.com/photo-1598514982205-f36b96d1e8d4?auto=format&fit=crop&w=300&q=80"
+                            alt="Dinner">
+                        <div class="meal-info">
+                            <span class="meal-tag">Dinner</span>
+                            <h3>Grilled Chicken & Asparagus</h3>
+                            <p>Lean protein and high fiber for optimal recovery before bed.</p>
+                            <div class="meal-macros" data-base-kcal="450" data-base-pro="40" data-base-qty="350" data-base-unit="g">
+                                <span class="macro-stats">450 kcal • 40g Protein</span><br>
+                                <span class="macro-qty text-green" style="font-weight: bold;">Quantity: 350 g</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Veg Meals -->
+                    <div class="meal-card glass-panel veg-meal hidden">
+                        <img src="https://images.unsplash.com/photo-1556881286-fc6915169721?auto=format&fit=crop&w=300&q=80"
+                            alt="Breakfast">
+                        <div class="meal-info">
+                            <span class="meal-tag">Breakfast</span>
+                            <h3>Green Smoothie Bowl</h3>
+                            <p>High in vitamins C and K from spinach and berries. Excellent for morning energy.</p>
+                            <div class="meal-macros" data-base-kcal="320" data-base-pro="15" data-base-qty="400" data-base-unit="ml">
+                                <span class="macro-stats">320 kcal • 15g Protein</span><br>
+                                <span class="macro-qty text-green" style="font-weight: bold;">Quantity: 400 ml</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="meal-card glass-panel veg-meal hidden">
+                        <img src="https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?auto=format&fit=crop&w=300&q=80"
+                            alt="Lunch">
+                        <div class="meal-info">
+                            <span class="meal-tag">Lunch</span>
+                            <h3>Lentil & Sweet Potato Bowl</h3>
+                            <p>Rich in complex carbs, fiber, and Vitamin A for sustained energy and immunity.</p>
+                            <div class="meal-macros" data-base-kcal="450" data-base-pro="22" data-base-qty="350" data-base-unit="g">
+                                <span class="macro-stats">450 kcal • 22g Protein</span><br>
+                                <span class="macro-qty text-green" style="font-weight: bold;">Quantity: 350 g</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="meal-card glass-panel veg-meal hidden">
+                        <img src="https://images.unsplash.com/photo-1577218671603-9bbabdf6cb0c?auto=format&fit=crop&w=300&q=80"
+                            alt="Snacks">
+                        <div class="meal-info">
+                            <span class="meal-tag">Snacks</span>
+                            <h3>Hummus & Carrot Sticks</h3>
+                            <p>Rich in fiber and plant-based protein for steady energy.</p>
+                            <div class="meal-macros" data-base-kcal="180" data-base-pro="6" data-base-qty="150" data-base-unit="g">
+                                <span class="macro-stats">180 kcal • 6g Protein</span><br>
+                                <span class="macro-qty text-green" style="font-weight: bold;">Quantity: 150 g</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="meal-card glass-panel veg-meal hidden">
+                        <img src="https://images.unsplash.com/photo-1512058454905-6b841e7ad132?auto=format&fit=crop&w=300&q=80"
+                            alt="Dinner">
+                        <div class="meal-info">
+                            <span class="meal-tag">Dinner</span>
+                            <h3>Tofu & Broccoli Stir-fry</h3>
+                            <p>Packed with iron and lean plant protein for a fulfilling evening meal.</p>
+                            <div class="meal-macros" data-base-kcal="400" data-base-pro="25" data-base-qty="300" data-base-unit="g">
+                                <span class="macro-stats">400 kcal • 25g Protein</span><br>
+                                <span class="macro-qty text-green" style="font-weight: bold;">Quantity: 300 g</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+    <script src="chat.js"></script>
+    <script src="scanner.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js');
+        }
+    </script>
+</body>
+
+</html>
