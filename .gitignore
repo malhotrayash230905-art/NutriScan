@@ -42,8 +42,7 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Python Backend
-fastapi_backend/__pycache__/
-__pycache__/
-*.env
+# Environment variables
 .env
+fastapi_backend/.env
+*.env
