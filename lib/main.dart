@@ -998,20 +998,72 @@ class _AppShellState extends State<AppShell> {
 }
 
 // ---- DASHBOARD SCREEN ----
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   final VoidCallback onScanPressed;
   const DashboardScreen({super.key, required this.onScanPressed});
 
   @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  int _waterGlasses = 0;
+  String? _selectedMood;
+  bool _isFasting = false;
+  DateTime? _fastStartTime;
+  Timer? _fastTimer;
+
+  final List<String> _healthTips = [
+    "Drinking water before meals can reduce calorie intake by 13%.",
+    "A 15-minute walk after meals helps regulate blood sugar.",
+    "Sleep is just as important as nutrition and exercise.",
+    "Vitamin D from morning sunlight improves mood and immunity.",
+    "Eating protein at breakfast reduces cravings throughout the day.",
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isFasting) {
+      _startTimer();
+    }
+  }
+
+  void _startTimer() {
+    _fastTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _fastTimer?.cancel();
+    super.dispose();
+  }
+
+  String _getFastDuration() {
+    if (_fastStartTime == null) return "00:00:00";
+    final diff = DateTime.now().difference(_fastStartTime!);
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String twoDigitMinutes = twoDigits(diff.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(diff.inSeconds.remainder(60));
+    return "${twoDigits(diff.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
+  }
+
+  @override
   Widget build(BuildContext context) {
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
+    String tipOfTheDay = _healthTips[DateTime.now().day % _healthTips.length];
+
     return ListView(
+      padding: const EdgeInsets.all(16),
       children: [
         Row(
           children: [
             CircleAvatar(
               radius: 30,
               backgroundColor: const Color(0xFF00F2FE),
-              child: Text(globalUserName?[0] ?? 'U', style: const TextStyle(fontSize: 24, color: Colors.black, fontWeight: FontWeight.bold)),
+              child: Text(globalUserName?[0].toUpperCase() ?? 'U', style: const TextStyle(fontSize: 24, color: Colors.black, fontWeight: FontWeight.bold)),
             ),
             const SizedBox(width: 16),
             Column(
@@ -1022,93 +1074,152 @@ class DashboardScreen extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 32),
-        if (!appSettings.hasReportUploaded)
-          GlassPanel(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 32),
+        const SizedBox(height: 16),
+        const Divider(color: Colors.white24, thickness: 1),
+        const SizedBox(height: 16),
+        
+        // WATER TRACKER
+        GlassPanel(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Expanded(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.analytics_outlined, size: 48, color: Colors.grey),
-                    const SizedBox(height: 16),
-                    Text('No Report Scanned'.tr, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    const Text('Daily Hydration', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
-                    Text('Upload a report from the Scanner tab to view insights.'.tr, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
+                    Text('$_waterGlasses / 8 Glasses', style: const TextStyle(color: Colors.grey)),
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: LinearProgressIndicator(
+                        value: _waterGlasses / 8,
+                        minHeight: 12,
+                        backgroundColor: isDark ? Colors.white12 : Colors.black12,
+                        valueColor: const AlwaysStoppedAnimation(Color(0xFF00F2FE)),
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-          )
-        else
-          LayoutBuilder(
-            builder: (context, constraints) {
-              int cols = constraints.maxWidth > 900 ? 4 : (constraints.maxWidth > 600 ? 3 : 2);
-              return GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: cols,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.1,
-                children: appSettings.dashboardMetrics.map((m) {
-                  Color color;
-                  switch(m.status) {
-                      case MetricStatus.low: color = Colors.amberAccent; break;
-                      case MetricStatus.high: color = Colors.redAccent; break;
-                      default: color = Colors.grey; break;
+              const SizedBox(width: 16),
+              FloatingActionButton(
+                heroTag: 'water_btn',
+                mini: true,
+                backgroundColor: const Color(0xFF00F2FE),
+                onPressed: () {
+                  if (_waterGlasses < 8) {
+                    setState(() => _waterGlasses++);
                   }
-                  double progress = 0.5;
-                  if (m.maxNormal > m.minNormal) {
-                      progress = (m.numericValue - (m.minNormal * 0.5)) / (m.maxNormal * 1.5 - m.minNormal * 0.5);
-                      if (progress < 0.1) progress = 0.1;
-                      if (progress > 1.0) progress = 1.0;
-                  }
-                  return _buildMetricCell(context, m.icon, m.name.tr, m.displayValue, ' ' + m.unit, progress, color);
-                }).toList(),
-              );
-            }
+                },
+                child: const Icon(Icons.add, color: Colors.black),
+              )
+            ],
           ),
-        const SizedBox(height: 24),
+        ),
+        const SizedBox(height: 16),
+
+        // MOOD LOGGER
         GlassPanel(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Upload your latest blood report'.tr, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Text('Our AI can analyze your new report to adjust your nutrition plan immediately.'.tr, style: const TextStyle(color: Colors.grey)),
+              const Text('How are you feeling today?', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00F2FE)),
-                onPressed: onScanPressed,
-                icon: const Icon(Icons.upload_file, color: Colors.black),
-                label: Text('Scan Report'.tr, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: ['😫', '🙁', '😐', '🙂', '🤩'].map((emoji) {
+                  bool isSelected = _selectedMood == emoji;
+                  return GestureDetector(
+                    onTap: () => setState(() => _selectedMood = emoji),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isSelected ? const Color(0xFF00F2FE).withOpacity(0.2) : Colors.transparent,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: isSelected ? const Color(0xFF00F2FE) : Colors.transparent, width: 2),
+                      ),
+                      child: Text(emoji, style: const TextStyle(fontSize: 28)),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // FASTING TIMER
+        GlassPanel(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Intermittent Fasting', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Text(
+                      _isFasting ? 'Fasting for: ${_getFastDuration()}' : 'Ready to start your fast?',
+                      style: TextStyle(
+                        fontSize: _isFasting ? 22 : 14, 
+                        fontWeight: _isFasting ? FontWeight.bold : FontWeight.normal,
+                        color: _isFasting ? const Color(0xFF00F2FE) : Colors.grey
+                      )
+                    ),
+                  ],
+                ),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _isFasting ? Colors.redAccent : const Color(0xFF00F2FE),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isFasting = !_isFasting;
+                    if (_isFasting) {
+                      _fastStartTime = DateTime.now();
+                      _startTimer();
+                    } else {
+                      _fastTimer?.cancel();
+                    }
+                  });
+                },
+                child: Text(_isFasting ? 'End Fast' : 'Start Fast', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               )
             ],
           ),
         ),
-      ],
-    );
-  }
+        const SizedBox(height: 16),
 
-  Widget _buildMetricCell(BuildContext context, IconData icon, String title, String val, String sub, double progress, Color color) {
-    return GlassPanel(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(children: [Icon(icon, color: color, size: 20), const SizedBox(width: 8), Text(title, style: const TextStyle(color: Colors.grey))]),
-          const SizedBox(height: 12),
-          RichText(text: TextSpan(children: [
-            TextSpan(text: val, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyLarge?.color)),
-            TextSpan(text: sub, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-          ])),
-          const SizedBox(height: 12),
-          LinearProgressIndicator(value: progress, backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white12 : Colors.black12, valueColor: AlwaysStoppedAnimation(color)),
-        ],
-      ),
+        // HEALTH TIP
+        GlassPanel(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              const Icon(Icons.lightbulb_outline, color: Colors.amber, size: 32),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Tip of the Day', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.amber)),
+                    const SizedBox(height: 4),
+                    Text(tipOfTheDay, style: const TextStyle(fontSize: 14)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 32),
+      ],
     );
   }
 }
@@ -1196,52 +1307,63 @@ class ScannerScreenState extends State<ScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Medical Report Scanner'.tr, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        Text('Upload your lab results for AI analysis.'.tr, style: const TextStyle(color: Colors.grey)),
-        const SizedBox(height: 24),
-        
-        if (!_scanned)
-          GestureDetector(
-            onTap: _scanning ? null : showPickerOptions,
-            child: GlassPanel(
-              padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 20),
-              child: Center(
-                child: Column(
-                  children: [
-                    Icon(
-                       _scanning ? Icons.hourglass_bottom : Icons.add_a_photo, 
-                       size: 64, color: const Color(0xFF00F2FE)
-                    ),
-                    const SizedBox(height: 16),
-                    Text(_scanning ? 'Analyzing Document...'.tr : 'Tap to Upload Report'.tr, style: const TextStyle(fontSize: 18)),
-                    const SizedBox(height: 8),
-                    if (!_scanning) Text('Use Camera or Gallery (Max 5MB)'.tr, style: const TextStyle(color: Colors.grey)),
-                  ],
-                ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: IntrinsicHeight(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Medical Report Scanner'.tr, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Text('Upload your lab results for AI analysis.'.tr, style: const TextStyle(color: Colors.grey)),
+                  const SizedBox(height: 24),
+                  
+                  if (!_scanned)
+                    GestureDetector(
+                      onTap: _scanning ? null : showPickerOptions,
+                      child: GlassPanel(
+                        padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 20),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              Icon(
+                                 _scanning ? Icons.hourglass_bottom : Icons.add_a_photo, 
+                                 size: 64, color: const Color(0xFF00F2FE)
+                              ),
+                              const SizedBox(height: 16),
+                              Text(_scanning ? 'Analyzing Document...'.tr : 'Tap to Upload Report'.tr, style: const TextStyle(fontSize: 18)),
+                              const SizedBox(height: 8),
+                              if (!_scanning) Text('Use Camera or Gallery (Max 5MB)'.tr, style: const TextStyle(color: Colors.grey)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    Expanded(
+                      child: Center(
+                        child: GlassPanel(
+                          padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 20),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.check_circle, size: 64, color: Colors.greenAccent),
+                              const SizedBox(height: 16),
+                              Text('Image / file uploaded successfully'.tr, textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                ],
               ),
             ),
-          )
-        else
-          Expanded(
-            child: Center(
-              child: GlassPanel(
-                padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.check_circle, size: 64, color: Colors.greenAccent),
-                    const SizedBox(height: 16),
-                    Text('Image / file uploaded successfully'.tr, textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ),
-            ),
-          )
-      ],
+          ),
+        );
+      },
     );
   }
 }
@@ -1449,16 +1571,48 @@ class _AllergyQuestionnaireState extends State<AllergyQuestionnaire> {
   }
 }
 
-// ---- NUTRITION SCREEN ----
-class NutritionScreen extends StatelessWidget {
+class NutritionScreen extends StatefulWidget {
   const NutritionScreen({super.key});
 
-  List<Widget> _getMeals(BuildContext context, bool isVeg, bool hasAllergy, String allergy) {
-    String a = allergy.toLowerCase();
-    bool noNuts = a.contains('nut') || a.contains('almond') || a.contains('peanut');
-    bool noGluten = a.contains('gluten') || a.contains('wheat') || a.contains('bread');
-    bool noDairy = a.contains('dairy') || a.contains('milk') || a.contains('cheese') || a.contains('yogurt');
+  @override
+  State<NutritionScreen> createState() => _NutritionScreenState();
+}
 
+class _NutritionScreenState extends State<NutritionScreen> {
+  bool _isLoading = false;
+
+  Future<void> _toggleVegStatus(bool isVeg) async {
+    if (appSettings.latestReportData == null) {
+      appSettings.toggleVegetarian(isVeg);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      List<String> outOfRange = appSettings.labMetrics
+          .where((m) => m.status != 'Normal' && m.status != 'Unknown')
+          .map((m) => '${m.name} is ${m.status} (${m.displayValue})')
+          .toList();
+
+      String dietType = isVeg ? 'veg' : 'non-veg';
+      
+      final newRecommendations = await ApiService.updateDiet(outOfRange, dietType, appSettings.allergyType);
+      
+      appSettings.toggleVegetarian(isVeg);
+      
+      ReportData currentData = appSettings.latestReportData!;
+      ReportData newData = ReportData(metrics: currentData.metrics, recommendations: newRecommendations);
+      appSettings.setNewReportData(newData);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update diet: $e'), backgroundColor: Colors.red));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  List<Widget> _getMeals(BuildContext context, bool isVeg) {
     if (!appSettings.hasReportUploaded) {
       return [
          const Center(
@@ -1467,6 +1621,15 @@ class NutritionScreen extends StatelessWidget {
              child: Text('Scan a report to unlock your AI nutrition plan.', style: TextStyle(color: Colors.grey)),
            ),
          )
+      ];
+    }
+
+    if (_isLoading) {
+      return [
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 40),
+          child: Center(child: CircularProgressIndicator()),
+        )
       ];
     }
 
@@ -1486,11 +1649,13 @@ class NutritionScreen extends StatelessWidget {
     
     void addMeals(String type, List<Meal> meals) {
       if (meals.isEmpty) return;
+      mealWidgets.add(Padding(
+        padding: const EdgeInsets.only(top: 16, bottom: 8),
+        child: Text(type.tr, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF00F2FE))),
+      ));
       for (var meal in meals) {
-        mealWidgets.add(
-          _buildMealCard(context, type.tr, meal.name, meal.reason, 'Portion: ${meal.portion}', [], [])
-        );
-        mealWidgets.add(const SizedBox(height: 16));
+        mealWidgets.add(_buildMealCard(context, meal));
+        mealWidgets.add(const SizedBox(height: 12));
       }
     }
 
@@ -1499,6 +1664,52 @@ class NutritionScreen extends StatelessWidget {
     addMeals('Dinner', rec.dinner);
 
     return mealWidgets;
+  }
+
+  Widget _buildMealCard(BuildContext context, Meal meal) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => RecipeDetailScreen(
+          title: meal.name,
+          tag: 'Meal',
+          desc: meal.reason,
+          macros: 'Portion: ${meal.portion}',
+          ingredients: const [],
+          steps: const [],
+        )));
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: GlassPanel(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF00F2FE).withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.restaurant, color: Color(0xFF00F2FE)),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(meal.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text(meal.reason, style: const TextStyle(color: Colors.grey, fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 8),
+                  Text('Portion: ${meal.portion}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.amber)),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+          ],
+        )
+      ),
+    );
   }
 
   @override
@@ -1510,12 +1721,23 @@ class NutritionScreen extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text('Your Nutrition Plan'.tr, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Expanded(
-                  child: Text('Your Nutrition Plan'.tr, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                Row(
+                  children: [
+                    const Text('Veg', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                    Switch(
+                      value: !isVeg,
+                      activeColor: Colors.redAccent,
+                      inactiveThumbColor: Colors.green,
+                      inactiveTrackColor: Colors.green.withOpacity(0.5),
+                      onChanged: (val) => _toggleVegStatus(!val),
+                    ),
+                    const Text('Non-Veg', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                  ],
                 ),
                 OutlinedButton.icon(
                   onPressed: () {
@@ -1531,12 +1753,12 @@ class NutritionScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  icon: const Icon(Icons.edit, size: 16),
-                  label: Text('Allergies'.tr, style: const TextStyle(fontSize: 12)),
+                  icon: const Icon(Icons.edit, size: 14),
+                  label: Text('Edit Allergies'.tr, style: const TextStyle(fontSize: 12)),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Theme.of(context).primaryColor,
                     side: BorderSide(color: Theme.of(context).primaryColor),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   ),
                 ),
@@ -1545,67 +1767,12 @@ class NutritionScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Expanded(
               child: ListView(
-                children: _getMeals(context, isVeg, appSettings.hasAllergy ?? false, appSettings.allergyType),
+                children: _getMeals(context, isVeg),
               ),
             )
           ],
         );
       },
-    );
-  }
-
-  Widget _buildMealCard(BuildContext context, String tag, String title, String desc, String macros, List<String> ingredients, List<String> steps) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => RecipeDetailScreen(
-          title: title,
-          tag: tag,
-          desc: desc,
-          macros: macros,
-          ingredients: ingredients,
-          steps: steps,
-        )));
-      },
-      borderRadius: BorderRadius.circular(20),
-      child: GlassPanel(
-        padding: EdgeInsets.zero,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-               height: 150,
-               decoration: BoxDecoration(
-                 color: Theme.of(context).brightness == Brightness.dark ? Colors.black45 : Colors.black12,
-                 borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-               ),
-               child: Center(child: Icon(Icons.restaurant, size: 50, color: Theme.of(context).brightness == Brightness.dark ? Colors.white.withOpacity(0.5) : Colors.black.withOpacity(0.2))),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Chip(label: Text(tag, style: const TextStyle(color: Color(0xFF00F2FE), fontSize: 12)), backgroundColor: const Color(0xFF00F2FE).withOpacity(0.2), side: BorderSide.none),
-                  const SizedBox(height: 8),
-                  Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text(desc, style: const TextStyle(color: Colors.grey), maxLines: 2, overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 4),
-                  Text('See more...', style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 12)),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Text(macros, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      const Spacer(),
-                      const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
-                    ]
-                  ),
-                ]
-              ),
-            )
-          ],
-        )
-      ),
     );
   }
 }
@@ -1699,17 +1866,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         activeColor: const Color(0xFF00F2FE),
                         onChanged: (val) {
                           appSettings.toggleTheme(val);
-                          setState((){});
-                        },
-                      ),
-                      const Divider(height: 1, color: Colors.grey, indent: 16, endIndent: 16),
-                      SwitchListTile(
-                        title: Text('Vegetarian Food'.tr),
-                        subtitle: Text('Select if you prefer vegetarian meals'.tr),
-                        value: appSettings.isVegetarian,
-                        activeColor: const Color(0xFF00F2FE),
-                        onChanged: (val) {
-                          appSettings.toggleVegetarian(val);
                           setState((){});
                         },
                       ),
@@ -2001,116 +2157,105 @@ class ReportHistoryScreen extends StatelessWidget {
         elevation: 0,
       ),
       body: SafeArea(
-        child: appSettings.reportHistory.isEmpty
-            ? Center(child: Text('No reports scanned yet.'.tr, style: const TextStyle(color: Colors.grey)))
-            : ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: appSettings.reportHistory.length,
-                itemBuilder: (context, index) {
-                  final report = appSettings.reportHistory[index];
-                  final date = DateTime.tryParse(report['date'] ?? '') ?? DateTime.now();
-                  final metrics = (report['metrics'] as List).map((e) => HealthMetric.fromJson(e)).toList();
-                  
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: InkWell(
-                      onTap: () {
-                        if (report['report_data'] != null) {
-                          appSettings.latestReportData = ReportData.fromJson(report['report_data']);
-                          appSettings.labMetrics = metrics;
-                          appSettings.saveState();
-                          appSettings.notifyListeners();
-                          Navigator.pop(context); // close history
-                          Navigator.pop(context); // close settings
-                          appShellKey.currentState?.goToTab(2); // go to analysis tab
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report details not available.')));
-                        }
-                      },
-                      borderRadius: BorderRadius.circular(20),
-                      child: GlassPanel(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: ListenableBuilder(
+          listenable: appSettings,
+          builder: (context, _) {
+            if (appSettings.reportHistory.isEmpty) {
+              return Center(child: Text('No reports scanned yet.'.tr, style: const TextStyle(color: Colors.grey)));
+            }
+            return ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: appSettings.reportHistory.length,
+              itemBuilder: (context, index) {
+                final report = appSettings.reportHistory[index];
+                final date = DateTime.tryParse(report['date'] ?? '') ?? DateTime.now();
+                final metrics = (report['metrics'] as List).map((e) => HealthMetric.fromJson(e)).toList();
+                
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: InkWell(
+                    onTap: () {
+                      if (report['report_data'] != null) {
+                        appSettings.latestReportData = ReportData.fromJson(report['report_data']);
+                        appSettings.labMetrics = metrics;
+                        appSettings.saveState();
+                        appSettings.notifyListeners();
+                        Navigator.pop(context); // close history
+                        Navigator.pop(context); // close settings
+                        appShellKey.currentState?.goToTab(2); // go to analysis tab
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report details not available.')));
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: GlassPanel(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(child: Text('Report from: '.tr + '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      backgroundColor: Theme.of(context).cardColor,
+                                      title: const Text('Delete Report?', style: TextStyle(fontWeight: FontWeight.bold)),
+                                      content: const Text('Are you sure you want to completely delete this report and its diet plan?'),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(ctx),
+                                          child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(ctx);
+                                            appSettings.reportHistory.removeAt(index);
+                                            if (appSettings.latestReportData != null && report['report_data'] != null) {
+                                              if (index == 0 || appSettings.reportHistory.isEmpty) {
+                                                appSettings.latestReportData = null;
+                                                appSettings.labMetrics = [];
+                                              }
+                                            }
+                                            appSettings.saveState();
+                                            appSettings.notifyListeners();
+                                          },
+                                          child: const Text('Delete', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ]
+                          ),
+                          const SizedBox(height: 12),
+                          ...metrics.take(4).map((m) => Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Row(
                               children: [
-                                Expanded(child: Text('Report from: '.tr + '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
-                                IconButton(
-                                  icon: const Icon(Icons.close, color: Colors.redAccent),
-                                  onPressed: () {
-                                    showGeneralDialog(
-                                      context: context,
-                                      pageBuilder: (context, anim1, anim2) => const SizedBox(),
-                                      barrierDismissible: true,
-                                      barrierColor: Colors.black.withOpacity(0.5),
-                                      barrierLabel: '',
-                                      transitionBuilder: (context, anim1, anim2, child) {
-                                        return Transform.scale(
-                                          scale: Curves.easeInOut.transform(anim1.value),
-                                          child: Opacity(
-                                            opacity: anim1.value,
-                                            child: AlertDialog(
-                                              backgroundColor: Theme.of(context).cardColor,
-                                              title: Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: [
-                                                  const Text('Delete Report?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                                                  IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
-                                                ],
-                                              ),
-                                              content: const Text('Are you sure you want to completely delete this report and its diet plan?'),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () {
-                                                    Navigator.pop(context); // close dialog
-                                                    appSettings.reportHistory.removeAt(index);
-                                                    if (appSettings.latestReportData != null && report['report_data'] != null) {
-                                                      // Check if the currently active one was deleted
-                                                      // (simple check: compare date strings or just assume we should clear if it's the 0th index)
-                                                      if (index == 0) {
-                                                        appSettings.latestReportData = null;
-                                                        appSettings.labMetrics = [];
-                                                      }
-                                                    }
-                                                    appSettings.saveState();
-                                                    appSettings.notifyListeners();
-                                                  },
-                                                  child: const Text('Delete', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      transitionDuration: const Duration(milliseconds: 250),
-                                    );
-                                  },
-                                ),
+                                Icon(m.icon, size: 16, color: Colors.grey),
+                                const SizedBox(width: 8),
+                                Expanded(child: Text(m.name.tr + ': ', style: const TextStyle(color: Colors.grey), overflow: TextOverflow.ellipsis)),
+                                Text(m.displayValue + ' ' + m.unit, style: const TextStyle(fontWeight: FontWeight.bold)),
                               ]
                             ),
-                            const SizedBox(height: 12),
-                            ...metrics.take(4).map((m) => Padding(
-                              padding: const EdgeInsets.only(bottom: 4),
-                              child: Row(
-                                children: [
-                                  Icon(m.icon, size: 16, color: Colors.grey),
-                                  const SizedBox(width: 8),
-                                  Expanded(child: Text(m.name.tr + ': ', style: const TextStyle(color: Colors.grey), overflow: TextOverflow.ellipsis)),
-                                  Text(m.displayValue + ' ' + m.unit, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                ]
-                              ),
-                            )),
-                            if (metrics.length > 4) Text('... and ${metrics.length - 4} more'.tr, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                          ]
-                        )
-                      ),
+                          )),
+                          if (metrics.length > 4) Text('... and ${metrics.length - 4} more'.tr, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                        ]
+                      )
                     ),
-                  );
-                }
-          ),
+                  ),
+                );
+              }
+            );
+          },
+        ),
       ),
     );
   }
