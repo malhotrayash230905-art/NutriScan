@@ -5,7 +5,7 @@ import '../models/report_data.dart';
 import '../models/food_recommendation.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://10.196.221.233:8000/api'; // Replace with deployed URL in production
+  static const String baseUrl = 'http://127.0.0.1:8000/api'; // ADB Reverse URL
 
   static Future<ReportData> analyzeReport(List<int> imageBytes, String filename, String dietType, String allergies) async {
     var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/analyze-report'));
@@ -65,6 +65,25 @@ class ApiService {
         }
       } catch (_) {}
       throw Exception('Failed to update diet: $errorMessage');
+    }
+  }
+
+  static Future<String> sendMessage(String message, List<Map<String, dynamic>> history, String contextStr) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/chat'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'message': message,
+        'history': history,
+        'context': contextStr,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['response'];
+    } else {
+      throw Exception('Chat failed: ${response.body}');
     }
   }
 }
