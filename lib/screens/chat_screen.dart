@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 import 'dart:convert';
 import '../models/report_data.dart';
+import '../services/api_service.dart';
 
 class ChatScreen extends StatefulWidget {
   final ReportData? reportData;
@@ -15,35 +15,25 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _textController = TextEditingController();
   final List<ChatMessage> _messages = [];
-  late final GenerativeModel _model;
-  late final ChatSession _chat;
+  final List<Map<String, dynamic>> _history = [];
   bool _isLoading = false;
+  late String _systemInstruction;
 
   @override
   void initState() {
     super.initState();
-    // Use the API key from your environment or backend. Here it's a placeholder.
-    const apiKey = String.fromEnvironment('GEMINI_API_KEY');
     
     // Inject the report data into the system instructions
-    String systemInstruction = "You are an expert AI medical assistant and nutritionist. ";
+    _systemInstruction = "You are an expert AI medical assistant and nutritionist. ";
     if (widget.reportData != null) {
       final metricsJson = jsonEncode(widget.reportData!.metrics.map((k, v) => MapEntry(k, {'value': v.value, 'status': v.status})));
-      systemInstruction += "The user's latest lab report metrics are: $metricsJson. "
+      _systemInstruction += "The user's latest lab report metrics are: $metricsJson. "
                            "Always answer the user's questions in the context of these specific health parameters. "
                            "Do not give generic advice, tailor it to their out-of-range parameters if any.";
     }
-
-    _model = GenerativeModel(
-      model: 'gemini-2.5-flash',
-      apiKey: apiKey,
-      systemInstruction: Content.system(systemInstruction),
-    );
-    
-    _chat = _model.startChat();
     
     // Initial welcome message
-    _messages.add(ChatMessage(text: "Hello! I have analyzed your lab report. How can I help you today?", isUser: false));
+    _messages.add(const ChatMessage(text: "Hello! I have analyzed your lab report. How can I help you today?", isUser: false));
   }
 
   void _sendMessage() async {
@@ -57,14 +47,15 @@ class _ChatScreenState extends State<ChatScreen> {
     _textController.clear();
 
     try {
-      final response = await _chat.sendMessage(Content.text(text));
-      final aiText = response.text;
+      final response = await ApiService.sendMessage(text, _history, _systemInstruction);
       
-      if (aiText != null) {
-        setState(() {
-          _messages.insert(0, ChatMessage(text: aiText, isUser: false));
-        });
-      }
+      // Update history for next turn
+      _history.add({"role": "user", "parts": [text]});
+      _history.add({"role": "model", "parts": [response]});
+
+      setState(() {
+        _messages.insert(0, ChatMessage(text: response, isUser: false));
+      });
     } catch (e) {
       setState(() {
         _messages.insert(0, ChatMessage(text: "Error communicating with AI: $e", isUser: false));
