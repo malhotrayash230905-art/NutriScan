@@ -209,3 +209,25 @@ async def update_diet(request: UpdateDietRequest):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+class ChatRequest(BaseModel):
+    message: str
+    history: List[dict] # list of {"role": "user"/"model", "parts": ["text"]}
+    context: str
+
+@app.post("/api/chat")
+async def chat_endpoint(request: ChatRequest):
+    try:
+        model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=request.context)
+        
+        # Convert incoming history format to the format google.generativeai expects
+        formatted_history = []
+        for msg in request.history:
+            formatted_history.append({"role": msg["role"], "parts": msg["parts"]})
+            
+        chat = model.start_chat(history=formatted_history)
+        response = chat.send_message(request.message)
+        
+        return {"response": response.text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
