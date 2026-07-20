@@ -50,7 +50,7 @@
 1. Navigate to the `fastapi_backend` directory.
 2. Create a `.env` file and add your Google Gemini API key: `GEMINI_API_KEY=your_api_key_here`.
 3. Install dependencies: `pip install -r requirements.txt`.
-4. Run the server: `uvicorn main:app --reload`.
+4. Run the server: `uvicorn main:app --host 0.0.0.0 --port 8000 --reload`.
 
 ### Frontend
 1. Make sure you have Flutter installed.

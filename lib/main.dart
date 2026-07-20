@@ -964,16 +964,10 @@ class _AppShellState extends State<AppShell> {
           body: SafeArea(
             child: Padding(
                padding: const EdgeInsets.all(16.0),
-               child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                transitionBuilder: (Widget child, Animation<double> animation) {
-                  return FadeTransition(opacity: animation, child: child);
-                },
-                child: Container(
-                  key: ValueKey<int>(_currentIndex),
-                  child: _screens[_currentIndex],
-                ),
-              ),
+               child: IndexedStack(
+                 index: _currentIndex,
+                 children: _screens,
+               ),
             ),
           ),
           bottomNavigationBar: BottomNavigationBar(
@@ -1723,20 +1717,26 @@ class _NutritionScreenState extends State<NutritionScreen> {
           children: [
             Text('Your Nutrition Plan'.tr, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 12,
               children: [
-                Row(
-                  children: [
-                    const Text('Veg', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                    Switch(
-                      value: !isVeg,
-                      activeColor: Colors.redAccent,
-                      inactiveThumbColor: Colors.green,
-                      inactiveTrackColor: Colors.green.withOpacity(0.5),
-                      onChanged: (val) => _toggleVegStatus(!val),
-                    ),
-                    const Text('Non-Veg', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                ToggleButtons(
+                  borderRadius: BorderRadius.circular(20),
+                  isSelected: [isVeg, !isVeg],
+                  onPressed: (index) {
+                    if (index == 0 && !isVeg) _toggleVegStatus(true);
+                    if (index == 1 && isVeg) _toggleVegStatus(false);
+                  },
+                  selectedColor: Colors.white,
+                  fillColor: isVeg ? Colors.green : Colors.redAccent,
+                  color: Colors.grey,
+                  constraints: const BoxConstraints(minHeight: 36, minWidth: 80),
+                  children: const [
+                    Text('Veg', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text('Non-Veg', style: TextStyle(fontWeight: FontWeight.bold)),
                   ],
                 ),
                 OutlinedButton.icon(
@@ -2132,7 +2132,9 @@ class RecipeDetailScreen extends StatelessWidget {
                     children: [
                       const Icon(Icons.restaurant_menu, color: Colors.orangeAccent),
                       const SizedBox(width: 8),
-                      Text(macros, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      Expanded(
+                        child: Text(macros, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      ),
                     ]
                   )
                 ),

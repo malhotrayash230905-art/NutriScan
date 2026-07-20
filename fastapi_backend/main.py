@@ -22,16 +22,26 @@ app.add_middleware(
 )
 
 # Load the .env file securely to get GEMINI_API_KEY
-api_key = os.getenv("GEMINI_API_KEY")
-if not api_key:
+import random
+
+api_keys_raw = os.getenv("GEMINI_API_KEY", "")
+api_keys = [k.strip() for k in api_keys_raw.split(",") if k.strip()]
+
+if not api_keys:
     print("WARNING: GEMINI_API_KEY is not set. Please check your .env file.")
 else:
-    genai.configure(api_key=api_key)
-    print(f"INFO: Gemini configured using key: {api_key[:4]}...{api_key[-4:]}")
-    if "VIt" in api_key:
-        print("CRITICAL WARNING: You are still using the BROKEN API key with capital 'I'!")
-    elif "Vit" in api_key:
-        print("SUCCESS: You are using the CORRECT API key with lowercase 'i'.")
+    print(f"INFO: Found {len(api_keys)} API keys loaded for rotation.")
+    for key in api_keys:
+        if "VIt" in key:
+            print(f"CRITICAL WARNING: The key {key[:4]}... is BROKEN (uses capital 'I')!")
+
+def configure_random_gemini_key():
+    if not api_keys:
+        return
+    key = random.choice(api_keys)
+    genai.configure(api_key=key)
+    return key
+
 
 # Load Parameter Mapping (Optional now that we use rule-based, but kept for reference)
 with open("param_mapping.json", "r") as f:
@@ -48,6 +58,8 @@ async def analyze_report(
         
         # ==========================================
         # Pipeline Step 1: OCR Extraction via Gemini
+        active_key = configure_random_gemini_key()
+        print(f"analyze_report using key: {active_key[:8]}...")
         model_vision = genai.GenerativeModel('gemini-2.5-flash')
         
         prompt_ocr = """
@@ -116,6 +128,8 @@ async def analyze_report(
                  
         # ==========================================
         # Pipeline Step 3: Generative Meal Plan
+        active_key = configure_random_gemini_key()
+        print(f"analyze_report meals using key: {active_key[:8]}...")
         model_text = genai.GenerativeModel('gemini-2.5-flash')
         
         prompt_meals = f"""
@@ -123,10 +137,11 @@ async def analyze_report(
         {json.dumps(out_of_range)}
         
         CRITICAL REQUIREMENTS:
-        1. The user's diet type is strictly: {diet_type}. Ensure every meal strictly adheres to this (e.g., absolutely no meat if {diet_type} is veg, but if {diet_type} is non-veg, you MUST include non-veg items).
-        2. ALLERGIES: The user is allergic to or dislikes "{allergies}". YOU MUST NOT INCLUDE ANY MEALS OR INGREDIENTS CONTAINING "{allergies}". If they are allergic to a specific item (e.g. oatmeal), REPLACE ONLY that specific item with a suitable alternative. Do NOT generate a completely different meal plan just because of one allergy.
+        1. DIET RESTRICTION (CRITICAL): The user's diet type is strictly: {diet_type.upper()}. If the diet is 'veg' or 'vegetarian', you MUST NOT include ANY meat, poultry, fish, or seafood. ALL meals must be 100% vegetarian. If the diet is 'non-veg', you SHOULD include meat, poultry, or fish where appropriate.
+        2. ALLERGIES: The user is allergic to or dislikes "{allergies}". YOU MUST NOT INCLUDE ANY MEALS OR INGREDIENTS CONTAINING "{allergies}". If they are allergic to a specific item (e.g. oatmeal), REPLACE ONLY that specific item with a suitable alternative.
         3. VARIETY: Do NOT repeat food items across breakfast, lunch, and dinner. Provide high variety.
         4. TARGETED NUTRITION: The meals MUST directly help heal the specific out-of-range parameters listed above.
+        5. RANDOMNESS & NO REPETITION: Generate highly diverse food options. Make sure to randomize your recommendations so different reports do not get the same standard meals. Pick unique, interesting recipes.
 
         Generate a diverse 1-day meal plan based on the above constraints.
         Format as pure JSON like this:
@@ -144,7 +159,10 @@ async def analyze_report(
         Respond ONLY with the JSON object.
         """
         
-        response_meals = model_text.generate_content(prompt_meals)
+        response_meals = model_text.generate_content(
+            prompt_meals,
+            generation_config=genai.GenerationConfig(temperature=0.8)
+        )
         
         try:
             clean_meals_json = response_meals.text.replace('```json', '').replace('```', '').strip()
@@ -169,6 +187,8 @@ class UpdateDietRequest(BaseModel):
 @app.post("/api/update-diet")
 async def update_diet(request: UpdateDietRequest):
     try:
+        active_key = configure_random_gemini_key()
+        print(f"update_diet using key: {active_key[:8]}...")
         model_text = genai.GenerativeModel('gemini-2.5-flash')
         
         prompt_meals = f"""
@@ -176,10 +196,11 @@ async def update_diet(request: UpdateDietRequest):
         {json.dumps(request.out_of_range)}
         
         CRITICAL REQUIREMENTS:
-        1. The user's diet type is strictly: {request.diet_type}. Ensure every meal strictly adheres to this (e.g., absolutely no meat if {request.diet_type} is veg, but if {request.diet_type} is non-veg, you MUST include non-veg items).
-        2. ALLERGIES: The user is allergic to or dislikes "{request.allergies}". YOU MUST NOT INCLUDE ANY MEALS OR INGREDIENTS CONTAINING "{request.allergies}". If they are allergic to a specific item (e.g. oatmeal), REPLACE ONLY that specific item with a suitable alternative. Do NOT generate a completely different meal plan just because of one allergy.
+        1. DIET RESTRICTION (CRITICAL): The user's diet type is strictly: {request.diet_type.upper()}. If the diet is 'veg' or 'vegetarian', you MUST NOT include ANY meat, poultry, fish, or seafood. ALL meals must be 100% vegetarian. If the diet is 'non-veg', you SHOULD include meat, poultry, or fish where appropriate.
+        2. ALLERGIES: The user is allergic to or dislikes "{request.allergies}". YOU MUST NOT INCLUDE ANY MEALS OR INGREDIENTS CONTAINING "{request.allergies}". If they are allergic to a specific item (e.g. oatmeal), REPLACE ONLY that specific item with a suitable alternative.
         3. VARIETY: Do NOT repeat food items across breakfast, lunch, and dinner. Provide high variety.
         4. TARGETED NUTRITION: The meals MUST directly help heal the specific out-of-range parameters listed above.
+        5. RANDOMNESS & NO REPETITION: Generate highly diverse food options. Make sure to randomize your recommendations so different reports do not get the same standard meals. Pick unique, interesting recipes.
 
         Generate a diverse 1-day meal plan based on the above constraints.
         Format as pure JSON like this:
@@ -197,7 +218,10 @@ async def update_diet(request: UpdateDietRequest):
         Respond ONLY with the JSON object.
         """
         
-        response_meals = model_text.generate_content(prompt_meals)
+        response_meals = model_text.generate_content(
+            prompt_meals,
+            generation_config=genai.GenerationConfig(temperature=0.8)
+        )
         
         try:
             clean_meals_json = response_meals.text.replace('```json', '').replace('```', '').strip()
@@ -218,16 +242,23 @@ class ChatRequest(BaseModel):
 @app.post("/api/chat")
 async def chat_endpoint(request: ChatRequest):
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=request.context)
+        print(f"Received chat request: {request.message}")
+        active_key = configure_random_gemini_key()
+        print(f"chat_endpoint using key: {active_key[:8]}...")
+        model = genai.GenerativeModel('gemini-2.5-flash', system_instruction=request.context)
         
-        # Convert incoming history format to the format google.generativeai expects
         formatted_history = []
         for msg in request.history:
             formatted_history.append({"role": msg["role"], "parts": msg["parts"]})
             
+        print("Starting chat with history length:", len(formatted_history))
         chat = model.start_chat(history=formatted_history)
-        response = chat.send_message(request.message)
+        
+        print("Sending message to Gemini...")
+        response = await chat.send_message_async(request.message)
+        print("Received response from Gemini!")
         
         return {"response": response.text}
     except Exception as e:
+        print(f"Error in chat endpoint: {e}")
         raise HTTPException(status_code=500, detail=str(e))
