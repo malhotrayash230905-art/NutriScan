@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/report_data.dart';
 import '../services/api_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ChatScreen extends StatefulWidget {
   final ReportData? reportData;
@@ -46,9 +47,14 @@ class _ChatScreenState extends State<ChatScreen> {
     _history = [];
   }
 
+  String _getUserPrefix() {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    return userId != null ? '${userId}_' : 'default_';
+  }
+
   Future<void> _loadChats() async {
     final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString('chat_history');
+    final saved = prefs.getString('${_getUserPrefix()}chat_history');
     if (saved != null) {
       setState(() {
         final decoded = jsonDecode(saved) as List;
@@ -78,7 +84,7 @@ class _ChatScreenState extends State<ChatScreen> {
         _savedChats[idx]['title'] = title;
       }
     }
-    await prefs.setString('chat_history', jsonEncode(_savedChats));
+    await prefs.setString('${_getUserPrefix()}chat_history', jsonEncode(_savedChats));
     setState(() {}); // refresh drawer list if open
   }
 

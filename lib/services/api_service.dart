@@ -19,7 +19,7 @@ class ApiService {
 
   // 2. Production Cloud Host (used in Release/Production Mode)
   // Once you deploy the backend to Render or Railway, replace this placeholder with your live URL
-  static const String _productionCloudHost = 'your-nutriai-backend.onrender.com';
+  static const String _productionCloudHost = 'nutriscan-m3vn.onrender.com';
 
   static String get baseUrl {
     // Allows overriding via: flutter run --dart-define=BACKEND_IP=xxx
@@ -56,7 +56,7 @@ class ApiService {
       );
       request.files.add(pic);
       
-      var streamedResponse = await request.send().timeout(const Duration(seconds: 45));
+      var streamedResponse = await request.send().timeout(const Duration(seconds: 90));
       var response = await http.Response.fromStream(streamedResponse);
       
       if (response.statusCode == 200) {
@@ -100,7 +100,7 @@ class ApiService {
           'diet_type': dietType,
           'allergies': allergies,
         }),
-      ).timeout(const Duration(seconds: 45));
+      ).timeout(const Duration(seconds: 90));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -144,7 +144,7 @@ class ApiService {
           'history': history,
           'context': contextStr,
         }),
-      ).timeout(const Duration(seconds: 45));
+      ).timeout(const Duration(seconds: 90));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

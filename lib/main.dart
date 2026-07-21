@@ -206,6 +206,7 @@ class AppSettings extends ChangeNotifier {
     latestReportData = null;
     age = 28;
     gender = 'Male';
+    saveState();
     notifyListeners();
   }
 
